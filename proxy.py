@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import requests
+import os
 
 app = Flask(__name__)
 
@@ -7,7 +8,7 @@ app = Flask(__name__)
 def proxy():
     method = request.method
     target_url = request.args.get("url")
-    headers = {k: v for k, v in request.headers if k != 'Host'}
+    headers = {k: v for k, v in request.headers if k.lower() != 'host'}
     data = request.get_data()
     params = dict(request.args)
 
@@ -22,4 +23,5 @@ def proxy():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run()
+    port = int(os.environ.get("PORT", 5000))  # ✅ Render requires this
+    app.run(host="0.0.0.0", port=port)
