@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: binance-api-proxy
+    env: python
+    buildCommand: ""
+    startCommand: python proxy.py
