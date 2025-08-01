@@ -8,21 +8,32 @@ app = Flask(__name__)
 def proxy():
     try:
         method = request.method
-        target_url = request.args.get("url")
-        if not target_url:
+        target_path = request.args.get("url")
+        if not target_path:
             return jsonify({"error": "Missing 'url' param"}), 400
 
-        # Prepare actual request to Binance
-        binance_url = f"https://fapi.binance.com{target_url}"
+        # Determine which Binance domain to use
+        if target_path.startswith("/fapi"):
+            base_url = "https://fapi.binance.com"
+        elif target_path.startswith("/papi"):
+            base_url = "https://papi.binance.com"
+        elif target_path.startswith("/api"):
+            base_url = "https://api.binance.com"
+        else:
+            return jsonify({"error": f"Unsupported path: {target_path}"}), 400
+
+        # Compose full URL
+        full_url = f"{base_url}{target_path}"
+
         headers = {k: v for k, v in request.headers if k.lower() != 'host'}
         data = request.get_data()
         params = dict(request.args)
         params.pop("url", None)  # Don't forward 'url' param to Binance
 
-        # Forward request
-        response = requests.request(method, binance_url, headers=headers, data=data, params=params)
+        # Send request to Binance
+        response = requests.request(method, full_url, headers=headers, data=data, params=params)
 
-        # Try parsing as JSON
+        # Try parsing JSON
         try:
             return jsonify(response.json()), response.status_code
         except ValueError:
