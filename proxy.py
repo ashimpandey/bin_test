@@ -19,21 +19,28 @@ def proxy():
             base_url = "https://papi.binance.com"
         elif target_path.startswith("/api"):
             base_url = "https://api.binance.com"
+        elif target_path.startswith("/dapi"):
+            base_url = "https://dapi.binance.com"
+        elif target_path.startswith("/sapi"):
+            base_url = "https://api.binance.com"
+        elif target_path.startswith("/eapi"):
+            base_url = "https://eapi.binance.com"
         else:
             return jsonify({"error": f"Unsupported path: {target_path}"}), 400
 
         # Compose full URL
         full_url = f"{base_url}{target_path}"
 
+        # Extract headers and query params
         headers = {k: v for k, v in request.headers if k.lower() != 'host'}
         data = request.get_data()
         params = dict(request.args)
         params.pop("url", None)  # Don't forward 'url' param to Binance
 
-        # Send request to Binance
+        # Forward the request
         response = requests.request(method, full_url, headers=headers, data=data, params=params)
 
-        # Try parsing JSON
+        # Try to return JSON response
         try:
             return jsonify(response.json()), response.status_code
         except ValueError:
