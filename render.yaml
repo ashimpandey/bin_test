@@ -3,4 +3,4 @@ services:
     name: binance-api-proxy
     env: python
     buildCommand: ""
-    startCommand: python proxy.py
+    startCommand: gunicorn proxy:app --bind 0.0.0.0:$PORT --timeout 120
